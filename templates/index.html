@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoHub Desktop Suite - Web Edition</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-play-circle"></i>
+                <span>VideoHub Desktop Suite</span>
+            </div>
+            <div class="version">Web Edition</div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- URL Input Section -->
+            <section class="input-section">
+                <div class="input-group">
+                    <label for="url-input">YouTube URL</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="url-input" placeholder="Enter YouTube URL here..." />
+                        <button id="analyze-btn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            Analyze
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Download Path Section -->
+            <section class="download-path-section">
+                <div class="input-group">
+                    <label for="download-path">Download Path</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="download-path" placeholder="Select download folder..." readonly />
+                        <button id="browse-path-btn" class="btn btn-secondary">
+                            <i class="fas fa-folder-open"></i>
+                            Browse
+                        </button>
+                        <button id="reset-path-btn" class="btn btn-outline" title="Reset to default downloads folder">
+                            <i class="fas fa-undo"></i>
+                            Reset
+                        </button>
+                    </div>
+                    <div class="path-info">
+                        <small>Current: <span id="current-path">downloads/</span></small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Video Info Section -->
+            <section id="video-info" class="video-info-section" style="display: none;">
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <img id="video-thumbnail" src="" alt="Video thumbnail" />
+                    </div>
+                    <div class="video-details">
+                        <h3 id="video-title">Video Title</h3>
+                        <div class="video-meta">
+                            <span id="video-uploader">Uploader</span>
+                            <span id="video-duration">Duration</span>
+                            <span id="video-views">Views</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Download Options Section -->
+            <section id="download-options" class="download-section" style="display: none;">
+                <div class="section-header">
+                    <h3>Download Options</h3>
+                    <div class="download-type-toggle">
+                        <button class="toggle-btn active" data-type="video">
+                            <i class="fas fa-video"></i> Video
+                        </button>
+                        <button class="toggle-btn" data-type="audio">
+                            <i class="fas fa-music"></i> Audio
+                        </button>
+                        <button class="toggle-btn" data-type="raw">
+                            <i class="fas fa-file-audio"></i> Raw Audio
+                        </button>
+                    </div>
+                </div>
+
+                <div class="formats-container">
+                    <div class="quality-filter">
+                        <label for="quality-filter">Filter by Quality:</label>
+                        <select id="quality-filter">
+                            <option value="">All Qualities</option>
+                        </select>
+                    </div>
+                    
+                    <div id="formats-list" class="formats-list">
+                        <!-- Formats will be populated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Progress Section -->
+            <section id="progress-section" class="progress-section" style="display: none;">
+                <div class="progress-card">
+                    <h3>Download Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">Ready to download...</div>
+                    <div class="progress-actions">
+                        <button id="cancel-download" class="btn btn-danger" style="display: none;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Downloads History -->
+            <section class="downloads-section">
+                <div class="section-header">
+                    <h3>Downloads</h3>
+                    <button id="refresh-downloads" class="btn btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div id="downloads-list" class="downloads-list">
+                    <!-- Downloads will be populated here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 VideoHub Desktop Suite. Built with Flask & Modern Web Technologies.</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loading-text">Analyzing video...</p>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast" style="display: none;">
+        <div class="toast-content">
+            <i class="toast-icon"></i>
+            <span class="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html> 
