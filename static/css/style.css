@@ -197,6 +197,16 @@ body {
     font-size: 14px;
 }
 
+.btn-large {
+    padding: 20px 32px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.btn-large i {
+    font-size: 20px;
+}
+
 /* Video Info Section */
 .video-info-section {
     background: rgba(26, 26, 46, 0.95);
@@ -222,14 +232,14 @@ body {
     height: 120px;
     object-fit: cover;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .video-details h3 {
     margin-bottom: 15px;
+    font-size: 24px;
     color: #e0e0e0;
-    font-size: 20px;
-    font-weight: 600;
+    line-height: 1.3;
 }
 
 .video-meta {
@@ -239,12 +249,187 @@ body {
 }
 
 .video-meta span {
-    background: #37474f;
+    background: rgba(100, 181, 246, 0.1);
+    color: #64b5f6;
     padding: 8px 16px;
     border-radius: 20px;
     font-size: 14px;
-    color: #b0bec5;
     font-weight: 500;
+}
+
+/* Playlist Info Section */
+.playlist-info-section {
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playlist-card {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.playlist-header {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.playlist-thumbnail {
+    flex-shrink: 0;
+}
+
+.playlist-thumbnail img {
+    width: 200px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.playlist-details h3 {
+    margin-bottom: 15px;
+    font-size: 24px;
+    color: #e0e0e0;
+    line-height: 1.3;
+}
+
+.playlist-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.playlist-meta span {
+    background: rgba(100, 181, 246, 0.1);
+    color: #64b5f6;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Playlist actions enhancement */
+.playlist-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.playlist-actions .btn {
+    flex: 1;
+    min-width: 180px;
+    justify-content: center;
+}
+
+.playlist-actions .btn-primary {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    border: none;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.playlist-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #66bb6a, #4caf50);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.playlist-actions .btn-secondary {
+    background: linear-gradient(135deg, #2196f3, #42a5f5);
+    border: none;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.playlist-actions .btn-secondary:hover {
+    background: linear-gradient(135deg, #42a5f5, #2196f3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+}
+
+.playlist-videos h4 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #e0e0e0;
+    border-bottom: 2px solid rgba(100, 181, 246, 0.3);
+    padding-bottom: 10px;
+}
+
+.playlist-video-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.playlist-video-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.playlist-video-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(100, 181, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+.playlist-video-item.selected {
+    background: rgba(100, 181, 246, 0.2);
+    border-color: #64b5f6;
+}
+
+.playlist-video-item h5 {
+    font-size: 16px;
+    color: #e0e0e0;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.playlist-video-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.playlist-video-header h5 {
+    margin: 0;
+    flex: 1;
+}
+
+.playlist-video-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #b0b0b0;
+}
+
+.playlist-video-duration {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.playlist-video-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #64b5f6;
+    cursor: pointer;
 }
 
 /* Download Section */
@@ -434,6 +619,43 @@ body {
 .download-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(102, 187, 106, 0.4);
+}
+
+/* Inline Progress Bar Styles */
+.format-progress {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(26, 26, 46, 0.8) !important;
+    border-radius: 8px;
+    border: 2px solid rgba(100, 181, 246, 0.5) !important;
+    display: block !important;
+    min-height: 60px;
+}
+
+.inline-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #37474f;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 1px solid #546e7a;
+}
+
+.inline-progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #64b5f6, #42a5f5);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 6px;
+}
+
+.inline-progress-text {
+    text-align: center;
+    font-weight: 500;
+    color: #ffffff !important;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
 }
 
 /* Progress Section */
@@ -647,4 +869,45 @@ body {
     .format-details {
         grid-template-columns: 1fr;
     }
+} 
+
+/* Audio status styling */
+.format-with-audio {
+    color: #4caf50 !important;
+    font-weight: 600;
+}
+
+.format-no-audio {
+    color: #f44336 !important;
+    font-weight: 600;
+}
+
+.format-with-audio i {
+    color: #4caf50;
+    margin-right: 5px;
+}
+
+.format-no-audio i {
+    color: #f44336;
+    margin-right: 5px;
+}
+
+/* Enhanced format styling */
+.format-item[data-enhanced="true"] {
+    border-left: 4px solid #2196f3;
+}
+
+.format-item[data-audio-format="true"] {
+    border-left: 4px solid #4caf50;
+}
+
+/* Quality indicators */
+.format-quality {
+    font-weight: 600;
+    color: #2196f3;
+}
+
+.format-size {
+    color: #666;
+    font-size: 0.9em;
 } 

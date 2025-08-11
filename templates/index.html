@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoHub Desktop Suite - Web Edition</title>
+    <title>TubeSync - YouTube Video Downloader</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,9 +14,9 @@
         <header class="header">
             <div class="logo">
                 <i class="fas fa-play-circle"></i>
-                <span>VideoHub Desktop Suite</span>
+                <span>TubeSync</span>
             </div>
-            <div class="version">Web Edition</div>
+            <div class="version">YouTube Downloader</div>
         </header>
 
         <!-- Main Content -->
@@ -73,6 +73,41 @@
                 </div>
             </section>
 
+            <!-- Playlist Info Section -->
+            <section id="playlist-info" class="playlist-info-section" style="display: none;">
+                <div class="playlist-card">
+                    <div class="playlist-header">
+                        <div class="playlist-thumbnail">
+                            <img id="playlist-thumbnail" src="" alt="Playlist thumbnail" />
+                        </div>
+                        <div class="playlist-details">
+                            <h3 id="playlist-title">Playlist Title</h3>
+                            <div class="playlist-meta">
+                                <span id="playlist-uploader">Uploader</span>
+                                <span id="playlist-count">0 videos</span>
+                            </div>
+                            <div class="playlist-actions">
+                                <button id="download-full-playlist-btn" class="btn btn-primary btn-large">
+                                    <i class="fas fa-download"></i> Download Full Playlist
+                                </button>
+                                <button id="download-playlist-btn" class="btn btn-secondary">
+                                    <i class="fas fa-list-check"></i> Download Selected
+                                </button>
+                                <button id="download-selected-btn" class="btn btn-outline">
+                                    <i class="fas fa-cog"></i> Custom Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="playlist-videos">
+                        <h4>Videos in Playlist</h4>
+                        <div class="playlist-video-list" id="playlist-video-list">
+                            <!-- Playlist videos will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Download Options Section -->
             <section id="download-options" class="download-section" style="display: none;">
                 <div class="section-header">
@@ -104,22 +139,6 @@
                 </div>
             </section>
 
-            <!-- Progress Section -->
-            <section id="progress-section" class="progress-section" style="display: none;">
-                <div class="progress-card">
-                    <h3>Download Progress</h3>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill"></div>
-                    </div>
-                    <div class="progress-text" id="progress-text">Ready to download...</div>
-                    <div class="progress-actions">
-                        <button id="cancel-download" class="btn btn-danger" style="display: none;">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                    </div>
-                </div>
-            </section>
-
             <!-- Downloads History -->
             <section class="downloads-section">
                 <div class="section-header">
@@ -136,7 +155,8 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>&copy; 2024 VideoHub Desktop Suite. Built with Flask & Modern Web Technologies.</p>
+            <a href="https://github.com/rahulxiao" target="_blank"></a>
+            <p>&copy; 2024 TubeSync. Built with Flask & Modern Web Technologies.</p>
         </footer>
     </div>
 

@@ -1,5 +1,5 @@
 // Main application JavaScript
-class VideoHubApp {
+class TubeSyncApp {
     constructor() {
         this.currentVideoInfo = null;
         this.currentFormats = [];
@@ -52,9 +52,17 @@ class VideoHubApp {
             this.loadDownloads();
         });
 
-        // Cancel download
-        document.getElementById('cancel-download').addEventListener('click', () => {
-            this.cancelDownload();
+        // Playlist download buttons
+        document.getElementById('download-full-playlist-btn')?.addEventListener('click', () => {
+            this.downloadFullPlaylist();
+        });
+
+        document.getElementById('download-playlist-btn')?.addEventListener('click', () => {
+            this.downloadSelectedVideos();
+        });
+
+        document.getElementById('download-selected-btn')?.addEventListener('click', () => {
+            this.showCustomPlaylistDownload();
         });
     }
 
@@ -144,19 +152,93 @@ class VideoHubApp {
     displayVideoInfo(videoInfo) {
         this.currentVideoInfo = videoInfo;
         
-        // Update video info section
-        document.getElementById('video-title').textContent = videoInfo.title;
-        document.getElementById('video-uploader').textContent = videoInfo.uploader;
-        document.getElementById('video-duration').textContent = this.formatDuration(videoInfo.duration);
-        document.getElementById('video-views').textContent = this.formatNumber(videoInfo.view_count);
+        // Check if this is a playlist
+        if (videoInfo.is_playlist) {
+            this.displayPlaylistInfo(videoInfo);
+        } else {
+            // Update video info section
+            document.getElementById('video-title').textContent = videoInfo.title;
+            document.getElementById('video-uploader').textContent = videoInfo.uploader;
+            document.getElementById('video-duration').textContent = this.formatDuration(videoInfo.duration);
+            document.getElementById('video-views').textContent = this.formatNumber(videoInfo.view_count);
+            
+            if (videoInfo.thumbnail) {
+                document.getElementById('video-thumbnail').src = videoInfo.thumbnail;
+            }
+
+            // Show video info section
+            document.getElementById('video-info').style.display = 'block';
+            document.getElementById('download-options').style.display = 'block';
+            
+            // Hide playlist section
+            document.getElementById('playlist-info').style.display = 'none';
+        }
+    }
+
+    displayPlaylistInfo(playlistInfo) {
+        this.currentVideoInfo = playlistInfo;
         
-        if (videoInfo.thumbnail) {
-            document.getElementById('video-thumbnail').src = videoInfo.thumbnail;
+        // Update playlist info section
+        document.getElementById('playlist-title').textContent = playlistInfo.title;
+        document.getElementById('playlist-uploader').textContent = playlistInfo.uploader;
+        document.getElementById('playlist-count').textContent = `${playlistInfo.playlist_count} videos`;
+        
+        if (playlistInfo.thumbnail) {
+            document.getElementById('playlist-thumbnail').src = playlistInfo.thumbnail;
         }
 
-        // Show video info section
-        document.getElementById('video-info').style.display = 'block';
+        // Display playlist videos
+        this.renderPlaylistVideos(playlistInfo.playlist_entries);
+
+        // Show playlist section and hide video section
+        document.getElementById('playlist-info').style.display = 'block';
+        document.getElementById('video-info').style.display = 'none';
         document.getElementById('download-options').style.display = 'block';
+    }
+
+    renderPlaylistVideos(videos) {
+        const playlistVideoList = document.getElementById('playlist-video-list');
+        playlistVideoList.innerHTML = '';
+
+        videos.forEach((video, index) => {
+            const videoItem = this.createPlaylistVideoItem(video, index);
+            playlistVideoList.appendChild(videoItem);
+        });
+    }
+
+    createPlaylistVideoItem(video, index) {
+        const div = document.createElement('div');
+        div.className = 'playlist-video-item';
+        div.dataset.videoIndex = index;
+        div.dataset.videoUrl = video.webpage_url || video.url;
+
+        div.innerHTML = `
+            <div class="playlist-video-header">
+                <input type="checkbox" class="playlist-video-checkbox" data-video-index="${index}">
+                <h5>${video.title}</h5>
+            </div>
+            <div class="playlist-video-meta">
+                <span>${video.uploader}</span>
+                <span class="playlist-video-duration">${this.formatDuration(video.duration)}</span>
+            </div>
+        `;
+
+        // Add click handler for selection
+        div.addEventListener('click', (e) => {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = div.querySelector('.playlist-video-checkbox');
+                checkbox.checked = !checkbox.checked;
+                div.classList.toggle('selected', checkbox.checked);
+            }
+        });
+
+        // Add checkbox change handler
+        const checkbox = div.querySelector('.playlist-video-checkbox');
+        checkbox.addEventListener('change', (e) => {
+            div.classList.toggle('selected', e.target.checked);
+        });
+
+        return div;
     }
 
     displayFormats(formats) {
@@ -202,6 +284,16 @@ class VideoHubApp {
             div.dataset.audioFormat = 'true';
         }
 
+        // Add data attribute for enhanced formats
+        if (format.is_enhanced) {
+            div.dataset.enhanced = 'true';
+        }
+
+        // Add data attribute for audio presence
+        if (format.has_audio === false) {
+            div.dataset.noAudio = 'true';
+        }
+
         if (isAudioOnly) {
             // Audio-only format display
             div.innerHTML = `
@@ -227,12 +319,23 @@ class VideoHubApp {
                         <div class="format-detail-value">${format.abr ? format.abr + 'kbps' : 'N/A'}</div>
                     </div>
                 </div>
-                <button class="download-btn" onclick="app.downloadFormat('${format.format_id}')">
-                    <i class="fas fa-download"></i> Download Audio
+                <div class="format-progress" style="display: none;">
+                    <div class="inline-progress-bar">
+                        <div class="inline-progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="inline-progress-text">Starting download...</div>
+                </div>
+                <button class="download-btn" data-format-id="${format.format_id}">
+                    <i class="fas fa-music"></i> Download Audio
                 </button>
             `;
         } else {
-            // Video format display (existing code)
+            // Video format display
+            const hasAudio = format.has_audio !== false;
+            const audioStatus = hasAudio ? 'With Audio' : 'No Audio';
+            const audioIcon = hasAudio ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+            const audioClass = hasAudio ? 'format-with-audio' : 'format-no-audio';
+            
             div.innerHTML = `
                 <div class="format-header">
                     <div class="format-quality">${format.quality || format.resolution || 'N/A'}</div>
@@ -253,13 +356,34 @@ class VideoHubApp {
                     </div>
                     <div class="format-detail">
                         <div class="format-detail-label">Audio</div>
-                        <div class="format-detail-value">${format.abr ? format.abr + 'kbps' : 'N/A'}</div>
+                        <div class="format-detail-value ${audioClass}">
+                            <i class="${audioIcon}"></i>
+                            ${format.audio_info || 'N/A'}
+                        </div>
                     </div>
                 </div>
-                <button class="download-btn" onclick="app.downloadFormat('${format.format_id}')">
-                    <i class="fas fa-download"></i> Download
+                <div class="format-progress" style="display: none;">
+                    <div class="inline-progress-bar">
+                        <div class="inline-progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="inline-progress-text">Starting download...</div>
+                </div>
+                <button class="download-btn" data-format-id="${format.format_id}">
+                    <i class="fas fa-download"></i> Download ${hasAudio ? 'Video' : 'Video Only'}
                 </button>
             `;
+        }
+
+        // Add event listener to download button
+        const downloadBtn = div.querySelector('.download-btn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const formatId = downloadBtn.dataset.formatId;
+                if (formatId) {
+                    this.downloadFormat(formatId);
+                }
+            });
         }
 
         return div;
@@ -325,6 +449,32 @@ class VideoHubApp {
             return;
         }
 
+        // Store the current format ID for progress tracking
+        this.currentFormatId = formatId;
+
+        // Show inline progress for this format
+        const formatItem = document.querySelector(`[data-format-id="${formatId}"]`);
+        if (formatItem) {
+            const progressBar = formatItem.querySelector('.format-progress');
+            const downloadBtn = formatItem.querySelector('.download-btn');
+            
+            if (progressBar && downloadBtn) {
+                // Show progress bar and hide download button
+                progressBar.style.display = 'block';
+                downloadBtn.style.display = 'none';
+                
+                // Initialize progress bar
+                const progressFill = progressBar.querySelector('.inline-progress-fill');
+                const progressText = progressBar.querySelector('.inline-progress-text');
+                
+                if (progressFill && progressText) {
+                    progressFill.style.width = '0%';
+                    progressFill.style.background = 'linear-gradient(135deg, #42a5f5, #2196f3)';
+                    progressText.textContent = 'Starting download...';
+                }
+            }
+        }
+
         // Determine download type based on format
         let downloadType = this.currentDownloadType;
         if (format.download_type === 'audio_only' || 
@@ -358,6 +508,370 @@ class VideoHubApp {
                 this.showToast('Download started!', 'success');
             } else {
                 this.showToast(data.error || 'Failed to start download', 'error');
+                // Hide progress and show download button again on error
+                if (formatItem) {
+                    const progressBar = formatItem.querySelector('.format-progress');
+                    const downloadBtn = formatItem.querySelector('.download-btn');
+                    if (progressBar && downloadBtn) {
+                        progressBar.style.display = 'none';
+                        downloadBtn.style.display = 'inline-block';
+                    }
+                }
+            }
+        } catch (error) {
+            this.showToast('Network error: ' + error.message, 'error');
+            // Hide progress and show download button again on error
+            if (formatItem) {
+                const progressBar = formatItem.querySelector('.format-progress');
+                const downloadBtn = formatItem.querySelector('.download-btn');
+                if (progressBar && downloadBtn) {
+                    progressBar.style.display = 'none';
+                    downloadBtn.style.display = 'inline-block';
+                }
+            }
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async downloadPlaylist() {
+        if (!this.currentVideoInfo || !this.currentVideoInfo.is_playlist) {
+            this.showToast('Please analyze a playlist first', 'error');
+            return;
+        }
+
+        // Get the first available format for playlist download
+        if (!this.currentFormats || this.currentFormats.length === 0) {
+            this.showToast('No formats available for download', 'error');
+            return;
+        }
+
+        const format = this.currentFormats[0]; // Use first available format
+        let downloadType = this.currentDownloadType;
+        if (format.download_type === 'audio_only' || 
+            (format.vcodec === 'none' && format.acodec && format.acodec !== 'none')) {
+            downloadType = 'audio';
+        }
+
+        // Store the current format ID for progress tracking
+        this.currentFormatId = format.format_id;
+
+        // Show inline progress for this format
+        const formatItem = document.querySelector(`[data-format-id="${format.format_id}"]`);
+        if (formatItem) {
+            const progressBar = formatItem.querySelector('.format-progress');
+            const downloadBtn = formatItem.querySelector('.download-btn');
+            
+            if (progressBar && downloadBtn) {
+                // Show progress bar and hide download button
+                progressBar.style.display = 'block';
+                downloadBtn.style.display = 'none';
+                
+                // Initialize progress bar
+                const progressFill = progressBar.querySelector('.inline-progress-fill');
+                const progressText = progressBar.querySelector('.inline-progress-text');
+                
+                if (progressFill && progressText) {
+                    progressFill.style.width = '0%';
+                    progressFill.style.background = 'linear-gradient(135deg, #42a5f5, #2196f3)';
+                    progressText.textContent = 'Starting playlist download...';
+                }
+            }
+        }
+
+        this.showLoading('Starting playlist download...');
+        
+        try {
+            const response = await fetch('/api/download-playlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: document.getElementById('url-input').value.trim(),
+                    format_id: format.format_id,
+                    download_type: downloadType,
+                    download_path: this.currentDownloadPath,
+                    max_videos: 50 // Limit to prevent abuse
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.currentDownloadId = data.download_id;
+                this.startProgressTracking();
+                this.showToast(`Playlist download started! (${data.total_videos} videos)`, 'success');
+            } else {
+                this.showToast(data.error || 'Failed to start playlist download', 'error');
+                // Hide progress and show download button again on error
+                if (formatItem) {
+                    const progressBar = formatItem.querySelector('.format-progress');
+                    const downloadBtn = formatItem.querySelector('.download-btn');
+                    if (progressBar && downloadBtn) {
+                        progressBar.style.display = 'none';
+                        downloadBtn.style.display = 'inline-block';
+                    }
+                }
+            }
+        } catch (error) {
+            this.showToast('Network error: ' + error.message, 'error');
+            // Hide progress and show download button again on error
+            if (formatItem) {
+                const progressBar = formatItem.querySelector('.format-progress');
+                const downloadBtn = formatItem.querySelector('.download-btn');
+                if (progressBar && downloadBtn) {
+                    progressBar.style.display = 'none';
+                    downloadBtn.style.display = 'inline-block';
+                }
+            }
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async downloadSelectedVideos() {
+        if (!this.currentVideoInfo || !this.currentVideoInfo.is_playlist) {
+            this.showToast('Please analyze a playlist first', 'error');
+            return;
+        }
+
+        // Get selected videos
+        const selectedCheckboxes = document.querySelectorAll('.playlist-video-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            this.showToast('Please select videos to download', 'error');
+            return;
+        }
+
+        // Get the first available format for download
+        if (!this.currentFormats || this.currentFormats.length === 0) {
+            this.showToast('No formats available for download', 'error');
+            return;
+        }
+
+        const format = this.currentFormats[0];
+        let downloadType = this.currentDownloadType;
+        if (format.download_type === 'audio_only' || 
+            (format.vcodec === 'none' && format.acodec && format.acodec !== 'none')) {
+            downloadType = 'audio';
+        }
+
+        this.showLoading(`Starting download of ${selectedCheckboxes.length} selected videos...`);
+        
+        // Download each selected video individually
+        let completed = 0;
+        let failed = 0;
+
+        for (const checkbox of selectedCheckboxes) {
+            const videoIndex = parseInt(checkbox.dataset.videoIndex);
+            const video = this.currentVideoInfo.playlist_entries[videoIndex];
+            const videoUrl = video.webpage_url || video.url;
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: videoUrl,
+                        format_id: format.format_id,
+                        download_type: downloadType,
+                        download_path: this.currentDownloadPath
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    completed++;
+                    this.showToast(`Downloaded: ${video.title.substring(0, 50)}...`, 'success');
+                } else {
+                    failed++;
+                    this.showToast(`Failed: ${video.title.substring(0, 50)}...`, 'error');
+                }
+            } catch (error) {
+                failed++;
+                this.showToast(`Error downloading: ${video.title.substring(0, 50)}...`, 'error');
+            }
+        }
+
+        this.hideLoading();
+        
+        if (failed === 0) {
+            this.showToast(`Successfully downloaded ${completed} videos!`, 'success');
+        } else {
+            this.showToast(`Downloaded ${completed} videos, ${failed} failed.`, 'warning');
+        }
+    }
+
+    async downloadFullPlaylist() {
+        if (!this.currentVideoInfo || !this.currentVideoInfo.is_playlist) {
+            this.showToast('Please analyze a playlist first', 'error');
+            return;
+        }
+
+        // Get the first available format for playlist download
+        if (!this.currentFormats || this.currentFormats.length === 0) {
+            this.showToast('No formats available for download', 'error');
+            return;
+        }
+
+        // Find the best quality format (prioritize combined formats with audio)
+        let bestFormat = this.currentFormats.find(f => f.download_type === 'combined_format' || f.download_type === 'enhanced_format');
+        if (!bestFormat) {
+            bestFormat = this.currentFormats[0]; // Fallback to first available format
+        }
+
+        let downloadType = this.currentDownloadType;
+        if (bestFormat.download_type === 'audio_only' || 
+            (bestFormat.vcodec === 'none' && bestFormat.acodec && bestFormat.acodec !== 'none')) {
+            downloadType = 'audio';
+        }
+
+        // Store the current format ID for progress tracking
+        this.currentFormatId = bestFormat.format_id;
+
+        // Show inline progress for this format
+        const formatItem = document.querySelector(`[data-format-id="${bestFormat.format_id}"]`);
+        if (formatItem) {
+            const progressBar = formatItem.querySelector('.format-progress');
+            const downloadBtn = formatItem.querySelector('.download-btn');
+            
+            if (progressBar && downloadBtn) {
+                // Show progress bar and hide download button
+                progressBar.style.display = 'block';
+                downloadBtn.style.display = 'none';
+                
+                // Initialize progress bar
+                const progressFill = progressBar.querySelector('.inline-progress-fill');
+                const progressText = progressBar.querySelector('.inline-progress-text');
+                
+                if (progressFill && progressText) {
+                    progressFill.style.width = '0%';
+                    progressFill.style.background = 'linear-gradient(135deg, #42a5f5, #2196f3)';
+                    progressText.textContent = 'Starting full playlist download...';
+                }
+            }
+        }
+
+        this.showLoading(`Starting full playlist download (${this.currentVideoInfo.playlist_count} videos)...`);
+        
+        try {
+            const response = await fetch('/api/download-playlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: document.getElementById('url-input').value.trim(),
+                    format_id: bestFormat.format_id,
+                    download_type: downloadType,
+                    download_path: this.currentDownloadPath,
+                    max_videos: this.currentVideoInfo.playlist_count // Download all videos
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.currentDownloadId = data.download_id;
+                this.startProgressTracking();
+                this.showToast(`Full playlist download started! (${data.total_videos} videos)`, 'success');
+            } else {
+                this.showToast(data.error || 'Failed to start full playlist download', 'error');
+                // Hide progress and show download button again on error
+                if (formatItem) {
+                    const progressBar = formatItem.querySelector('.format-progress');
+                    const downloadBtn = formatItem.querySelector('.download-btn');
+                    if (progressBar && downloadBtn) {
+                        progressBar.style.display = 'none';
+                        downloadBtn.style.display = 'inline-block';
+                    }
+                }
+            }
+        } catch (error) {
+            this.showToast('Network error: ' + error.message, 'error');
+            // Hide progress and show download button again on error
+            if (formatItem) {
+                const progressBar = formatItem.querySelector('.format-progress');
+                const downloadBtn = formatItem.querySelector('.download-btn');
+                if (progressBar && downloadBtn) {
+                    progressBar.style.display = 'none';
+                    downloadBtn.style.display = 'inline-block';
+                }
+            }
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    showCustomPlaylistDownload() {
+        if (!this.currentVideoInfo || !this.currentVideoInfo.is_playlist) {
+            this.showToast('Please analyze a playlist first', 'error');
+            return;
+        }
+
+        // Show custom download options
+        const totalVideos = this.currentVideoInfo.playlist_count;
+        const customCount = prompt(`Enter number of videos to download (1-${totalVideos}):`, totalVideos);
+        
+        if (customCount === null) return; // User cancelled
+        
+        const count = parseInt(customCount);
+        if (isNaN(count) || count < 1 || count > totalVideos) {
+            this.showToast(`Please enter a valid number between 1 and ${totalVideos}`, 'error');
+            return;
+        }
+
+        this.downloadCustomPlaylist(count);
+    }
+
+    async downloadCustomPlaylist(maxVideos) {
+        if (!this.currentVideoInfo || !this.currentFormats || this.currentFormats.length === 0) {
+            this.showToast('No formats available for download', 'error');
+            return;
+        }
+
+        // Find the best quality format
+        let bestFormat = this.currentFormats.find(f => f.download_type === 'combined_format' || f.download_type === 'enhanced_format');
+        if (!bestFormat) {
+            bestFormat = this.currentFormats[0];
+        }
+
+        let downloadType = this.currentDownloadType;
+        if (bestFormat.download_type === 'audio_only' || 
+            (bestFormat.vcodec === 'none' && bestFormat.acodec && bestFormat.acodec !== 'none')) {
+            downloadType = 'audio';
+        }
+
+        this.currentFormatId = bestFormat.format_id;
+
+        this.showLoading(`Starting custom playlist download (${maxVideos} videos)...`);
+        
+        try {
+            const response = await fetch('/api/download-playlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: document.getElementById('url-input').value.trim(),
+                    format_id: bestFormat.format_id,
+                    download_type: downloadType,
+                    download_path: this.currentDownloadPath,
+                    max_videos: maxVideos
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                this.currentDownloadId = data.download_id;
+                this.startProgressTracking();
+                this.showToast(`Custom playlist download started! (${data.total_videos} videos)`, 'success');
+            } else {
+                this.showToast(data.error || 'Failed to start custom playlist download', 'error');
             }
         } catch (error) {
             this.showToast('Network error: ' + error.message, 'error');
@@ -367,21 +881,31 @@ class VideoHubApp {
     }
 
     startProgressTracking() {
-        // Show progress section
-        document.getElementById('progress-section').style.display = 'block';
+        console.log('Starting progress tracking for download ID:', this.currentDownloadId);
+        
+        // Hide the separate progress section since we're using inline progress
+        const progressSection = document.getElementById('progress-section');
+        if (progressSection) {
+            progressSection.style.display = 'none';
+        }
         
         // Start polling for progress updates
         this.progressInterval = setInterval(async () => {
-            if (!this.currentDownloadId) return;
+            if (!this.currentDownloadId) {
+                console.log('No current download ID, stopping progress tracking');
+                this.stopProgressTracking();
+                return;
+            }
 
             try {
                 const response = await fetch(`/api/progress/${this.currentDownloadId}`);
                 const progress = await response.json();
 
                 if (response.ok) {
-                    this.updateProgress(progress);
+                    this.updateInlineProgress(progress);
                     
                     if (progress.status === 'completed' || progress.status === 'error') {
+                        console.log('Download finished with status:', progress.status);
                         this.stopProgressTracking();
                         if (progress.status === 'completed') {
                             this.loadDownloads(); // Refresh downloads list
@@ -391,21 +915,99 @@ class VideoHubApp {
             } catch (error) {
                 console.error('Progress tracking error:', error);
             }
-        }, 1000);
+        }, 500); // Update every 500ms for smooth progress
+    }
+
+    updateInlineProgress(progress) {
+        console.log('Updating inline progress:', progress);
+        
+        // Find the format item that's being downloaded
+        const formatItem = document.querySelector(`[data-format-id="${this.currentFormatId}"]`);
+        if (!formatItem) {
+            console.error('Format item not found for:', this.currentFormatId);
+            return;
+        }
+
+        const progressBar = formatItem.querySelector('.format-progress');
+        const progressFill = formatItem.querySelector('.inline-progress-fill');
+        const progressText = formatItem.querySelector('.inline-progress-text');
+        const downloadBtn = formatItem.querySelector('.download-btn');
+
+        console.log('Progress elements found:', { progressBar, progressFill, progressText, downloadBtn });
+
+        if (progressBar && progressFill && progressText) {
+            // Show progress section
+            progressBar.style.display = 'block';
+            
+            // Update progress bar with smooth animation
+            const progressValue = progress.progress || 0;
+            console.log('Setting progress width to:', progressValue + '%');
+            progressFill.style.width = `${progressValue}%`;
+            
+            // Update progress text
+            if (progress.total_videos && progress.total_videos > 0) {
+                // This is a playlist download
+                let message = progress.message || 'Downloading...';
+                if (progress.current_video && progress.completed_videos !== undefined) {
+                    message += ` (${progress.completed_videos}/${progress.total_videos} completed`;
+                    if (progress.failed_videos > 0) {
+                        message += `, ${progress.failed_videos} failed`;
+                    }
+                    message += ')';
+                }
+                progressText.textContent = message;
+            } else {
+                // Regular single video download
+                progressText.textContent = progress.message || `Downloading... ${progressValue.toFixed(1)}%`;
+            }
+
+            // Hide download button during download
+            if (downloadBtn) {
+                downloadBtn.style.display = 'none';
+            }
+
+            // Update progress bar color based on status
+            if (progress.status === 'completed') {
+                progressFill.style.background = 'linear-gradient(135deg, #66bb6a, #4caf50)';
+                progressText.textContent = 'Download completed!';
+            } else if (progress.status === 'error') {
+                progressFill.style.background = 'linear-gradient(135deg, #e57373, #ef5350)';
+                progressText.textContent = 'Download failed';
+            } else if (progress.status === 'downloading') {
+                // Show downloading status with blue color
+                progressFill.style.background = 'linear-gradient(135deg, #42a5f5, #2196f3)';
+            }
+            
+            // Force a repaint to ensure progress bar updates
+            progressFill.offsetHeight;
+        } else {
+            console.error('Progress elements not found in format item');
+        }
     }
 
     updateProgress(progress) {
+        // This method is now deprecated in favor of updateInlineProgress
+        // Keep for backward compatibility
         const progressFill = document.getElementById('progress-fill');
         const progressText = document.getElementById('progress-text');
-        const cancelBtn = document.getElementById('cancel-download');
 
         progressFill.style.width = `${progress.progress}%`;
-        progressText.textContent = progress.message;
-
-        if (progress.status === 'downloading') {
-            cancelBtn.style.display = 'inline-block';
+        
+        // Handle playlist progress differently
+        if (progress.total_videos && progress.total_videos > 0) {
+            // This is a playlist download
+            let message = progress.message;
+            if (progress.current_video && progress.completed_videos !== undefined) {
+                message += ` (${progress.current_video}/${progress.total_videos} completed`;
+                if (progress.failed_videos > 0) {
+                    message += `, ${progress.failed_videos} failed`;
+                }
+                message += ')';
+            }
+            progressText.textContent = message;
         } else {
-            cancelBtn.style.display = 'none';
+            // Regular single video download
+            progressText.textContent = progress.message;
         }
     }
 
@@ -414,7 +1016,23 @@ class VideoHubApp {
             clearInterval(this.progressInterval);
             this.progressInterval = null;
         }
+
+        // Reset inline progress bars
+        if (this.currentFormatId) {
+            const formatItem = document.querySelector(`[data-format-id="${this.currentFormatId}"]`);
+            if (formatItem) {
+                const progressBar = formatItem.querySelector('.format-progress');
+                const downloadBtn = formatItem.querySelector('.download-btn');
+                
+                if (progressBar && downloadBtn) {
+                    progressBar.style.display = 'none';
+                    downloadBtn.style.display = 'inline-block';
+                }
+            }
+        }
+
         this.currentDownloadId = null;
+        this.currentFormatId = null;
     }
 
     cancelDownload() {
@@ -538,5 +1156,5 @@ class VideoHubApp {
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new VideoHubApp();
-}); 
+    window.app = new TubeSyncApp();
+});

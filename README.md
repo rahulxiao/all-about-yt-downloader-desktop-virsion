@@ -1,155 +1,209 @@
-# 🎬 VideoHub Desktop - YouTube Video Downloader
+# TubeSync - YouTube Video Downloader Desktop
 
-A **native desktop application** for downloading YouTube videos with a beautiful **dark theme** and **customizable download paths**.
+A modern, feature-rich YouTube video downloader built with Python, Flask, and PyWebView. Download videos, playlists, and audio with ease in a beautiful desktop application.
 
-## ✨ **Features**
+## ✨ Features
 
-- 🖥️ **Native Desktop App** - Runs in its own window (no external browser)
-- 🌙 **Dark Theme** - Modern, eye-friendly interface
-- 📁 **Custom Download Paths** - Choose where to save your files
-- 🎯 **Multiple Formats** - Video, audio, and raw audio options
-- 📊 **Progress Tracking** - Real-time download progress
-- 🔄 **Path Management** - Browse folders and reset to default
-- 📱 **Responsive Design** - Works on different screen sizes
+- **🎥 Video Downloads**: Support for all resolutions (4K, 1440p, 1080p, 720p, 480p, 360p, 240p, 144p)
+- **🎵 Audio Downloads**: Extract audio and convert to MP3 automatically
+- **📋 Playlist Support**: Download entire playlists or select specific videos
+- **🎯 Smart Format Detection**: Automatically pairs video-only formats with audio streams
+- **📊 Real-time Progress**: Inline progress bars for all downloads
+- **🎨 Modern UI**: Beautiful, responsive interface with dark theme
+- **🔧 Cross-platform**: Works on Windows, macOS, and Linux
+- **📁 Custom Paths**: Choose your download location
+- **⚡ Fast Downloads**: Optimized with yt-dlp for maximum speed
 
-## 🚀 **Quick Start**
+## 🚀 Quick Start
 
-### **Option 1: Use the Built Executable**
+### Option 1: Run Built Executable (Windows)
+1. Download the latest release from the releases page
+2. Extract the ZIP file
+3. Double-click `TubeSync_Desktop.exe`
+
+### Option 2: Run from Source (Windows)
+1. Install Python 3.8+ from [python.org](https://python.org)
+2. Clone this repository
+3. Open Command Prompt in the project folder
+4. Run: `.\RUN_TUBESYNC.bat`
+
+### Option 3: Run from Source (Other Systems)
+1. Install Python 3.8+ and pip
+2. Clone this repository
+3. Install dependencies: `pip install -r requirements.txt`
+4. Run: `python app.py`
+
+## 🛠️ Installation
+
+### Prerequisites
+- Python 3.8 or higher
+- FFmpeg (for audio conversion)
+
+### Dependencies
 ```bash
-# Double-click this file
-LAUNCH_FIXED.bat
-```
-
-### **Option 2: Run from Source**
-```bash
-# Install dependencies
 pip install -r requirements.txt
-
-# Run the application
-py app_desktop_fixed.py
 ```
 
-## 🎨 **Interface**
+### Required Packages
+- `flask` - Web framework
+- `yt-dlp` - YouTube downloader
+- `pywebview` - Desktop GUI
 
-The application features a clean, dark theme with:
-- **YouTube URL Input** - Paste any YouTube link
-- **Download Path Selector** - Browse and choose save location
-- **Format Selection** - Choose video quality and type
-- **Progress Tracking** - Monitor download status
-- **Downloads List** - View and manage downloaded files
-
-## 🔧 **How to Use**
-
-### **1. Launch the App**
-- Run `LAUNCH_FIXED.bat` or `py app_desktop_fixed.py`
-- The app opens in its own desktop window
-
-### **2. Enter YouTube URL**
-- Paste any YouTube video URL
-- Click "Analyze" to get video information
-
-### **3. Select Download Path**
-- Click "Browse" to choose where to save files
-- Use "Reset" to return to default `downloads/` folder
-
-### **4. Choose Format & Download**
-- Select video/audio quality
-- Click download button
-- Monitor progress in real-time
-
-## 📁 **Project Structure**
+## 📁 Project Structure
 
 ```
-VideoHub Web Version/
-├── app_desktop_fixed.py          ← Main desktop application
-├── videohub_desktop_fixed.spec  ← PyInstaller configuration
-├── build_fixed.bat              ← Build script
-├── LAUNCH_FIXED.bat             ← Main launcher
-├── requirements.txt              ← Python dependencies
-├── templates/index.html          ← Web interface template
-├── static/css/style.css          ← Dark theme styles
-├── static/js/app.js              ← Frontend logic
-├── dist/VideoHub_Desktop_Fixed.exe ← Built executable
-└── README.md                     ← This file
+TubeSync/
+├── app.py                 # Main Flask application
+├── backend.py            # YouTube download logic
+├── static/               # CSS, JavaScript, and assets
+│   ├── css/
+│   │   └── style.css    # Application styling
+│   └── js/
+│       └── app.js       # Frontend logic
+├── templates/            # HTML templates
+│   └── index.html       # Main interface
+├── downloads/            # Default download folder
+├── build_clean.bat      # Build script for Windows
+├── create_distribution.bat # Distribution creation script
+├── RUN_TUBESYNC.bat     # Launcher script
+├── requirements.txt      # Python dependencies
+└── README.md            # This file
 ```
 
-## 🛠️ **Building from Source**
+## 🔨 Build Steps
 
-### **Prerequisites**
-- Python 3.8+
-- pip package manager
+### Windows Executable
+1. Ensure Python is installed and in PATH
+2. Run: `.\build_clean.bat`
+3. Find the executable in `dist\TubeSync_Desktop.exe`
 
-### **Build Steps**
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+### Distribution Package
+1. Build the executable first
+2. Run: `.\create_distribution.bat`
+3. Find the distribution in `TubeSync_Distribution\`
 
-# 2. Build executable
-build_fixed.bat
+## 🎯 Usage
 
-# 3. Launch the app
-LAUNCH_FIXED.bat
-```
+1. **Launch the Application**
+   - Run `TubeSync_Desktop.exe` or use `.\RUN_TUBESYNC.bat`
 
-## 📦 **Dependencies**
+2. **Download a Video**
+   - Paste a YouTube URL
+   - Click "Analyze"
+   - Select your preferred format
+   - Click "Download Video"
 
-- **Flask** - Web framework
-- **PyWebView** - Desktop window creation
-- **yt-dlp** - YouTube video downloading
-- **Tkinter** - File dialog integration
+3. **Download a Playlist**
+   - Paste a playlist URL
+   - Click "Analyze"
+   - Choose download option:
+     - **Download Full Playlist**: All videos
+     - **Download Selected**: Choose specific videos
+     - **Custom Download**: Specify number of videos
 
-## 🎯 **Download Path Features**
+4. **Audio Downloads**
+   - Switch to "Audio" tab
+   - Select quality (MP3 format)
+   - Click "Download Audio"
 
-- **Browse Button** - Opens Windows folder selection
-- **Reset Button** - Returns to default location
-- **Path Display** - Shows current save location
-- **Auto-Creation** - Creates folders if they don't exist
-- **Path-Aware Downloads** - Lists files from selected location
+## 🔧 Configuration
 
-## 🔍 **Troubleshooting**
+### Download Path
+- Use the "Browse" button to set custom download location
+- Click "Reset" to return to default `downloads/` folder
 
-### **Common Issues**
+### Format Selection
+- **Video**: Combined video+audio formats (recommended)
+- **Audio**: Audio-only formats (converted to MP3)
+- **Raw Audio**: Original audio formats
 
-1. **App Won't Start**
-   - Ensure Python is installed and in PATH
-   - Run `pip install -r requirements.txt`
-   - Check if backend.py exists in parent directory
+## 🎨 Features in Detail
 
-2. **Download Errors**
-   - Verify YouTube URL is valid
-   - Check internet connection
-   - Ensure download path is writable
+### Smart Format Detection
+- Automatically identifies combined video+audio formats
+- Creates enhanced formats by pairing video-only streams with audio
+- Ensures all video downloads include audio when possible
 
-3. **Path Selection Issues**
-   - Use Browse button for safe folder selection
-   - Ensure selected folder has write permissions
-   - Try resetting to default path
+### Quality Prioritization
+- 4K → 1440p → 1080p → 720p → 480p → 360p → 240p → 144p
+- Higher FPS formats prioritized within same resolution
+- Combined formats appear first for best quality
 
-### **Getting Help**
-- Check console output for error messages
-- Verify all dependencies are installed
-- Ensure backend.py is accessible
+### Progress Tracking
+- Real-time download progress with inline bars
+- Playlist download progress with video counts
+- Success/failure status for each download
 
-## 🎉 **What's Working**
+## 🐛 Troubleshooting
 
-✅ **Desktop Application** - Native window, no external browser  
-✅ **Dark Theme** - Modern, professional appearance  
-✅ **Download Paths** - Customizable save locations  
-✅ **Video Analysis** - YouTube video information extraction  
-✅ **Format Selection** - Multiple quality options  
-✅ **Progress Tracking** - Real-time download monitoring  
-✅ **File Management** - Organized downloads list  
+### Common Issues
 
-## 🚀 **Ready to Use!**
+**"Python was not found"**
+- Install Python from [python.org](https://python.org)
+- Ensure Python is added to PATH during installation
 
-VideoHub Desktop is now a **fully functional desktop application** with:
-- **Beautiful dark theme**
-- **Customizable download paths**
-- **Native desktop experience**
-- **Professional interface**
+**"No audio in downloaded videos"**
+- The app automatically pairs video with audio
+- All formats shown include audio information
+- Check the "Audio" field in format details
 
-**Simply run `LAUNCH_FIXED.bat` and start downloading!** 🎬✨
+**"Download button not working"**
+- Ensure you've analyzed a video first
+- Check that a download path is set
+- Verify the format is available
+
+**"Progress bar not updating"**
+- Progress bars are inline with each format
+- Check that downloads are actually starting
+- Verify network connectivity
+
+### Build Issues
+
+**"Build failed"**
+- Ensure Python 3.8+ is installed
+- Run `.\build_clean.bat` to clean and rebuild
+- Check that all dependencies are installed
+
+**"Executable not found"**
+- Build must complete successfully first
+- Check `dist\` folder for `TubeSync_Desktop.exe`
+- Run build script again if needed
+
+## 📱 System Requirements
+
+- **OS**: Windows 7+, macOS 10.12+, Ubuntu 18.04+
+- **Python**: 3.8 or higher
+- **RAM**: 2GB minimum, 4GB recommended
+- **Storage**: 100MB for application, additional for downloads
+- **Network**: Stable internet connection
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **yt-dlp**: Powerful YouTube downloader
+- **Flask**: Lightweight web framework
+- **PyWebView**: Cross-platform desktop GUI
+- **FFmpeg**: Audio/video processing
+
+## 📞 Support
+
+If you encounter any issues:
+1. Check the troubleshooting section above
+2. Review the console output for error messages
+3. Ensure all dependencies are properly installed
+4. Try rebuilding the application
 
 ---
 
-*Built with Flask, PyWebView, and modern web technologies* 
+**Made with ❤️ for the YouTube community** 
